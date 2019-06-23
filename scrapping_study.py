@@ -5,6 +5,11 @@ import numpy as np
 import requests
 import time
 import re
+import scrapy
+from scrapy.crawler import CrawlerProcess
+
+
+
 
 headers = ({'User-Agent':
             'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36'})
@@ -37,19 +42,23 @@ house_containers = soup.find_all('div', class_='searchResultProperty')
 # print(paginador_container)
 
 # Finding the first house in the website located in Odivelas
-first_house = house_containers[1]
+first_house = house_containers[0]
 # print(first_house)
-# print(first_house.find_all('span'))
-# print(len(first_house.find_all('span')))
-# prices = []
-# price = first_house.find_all('span')[3].text
-# if price == 'Contacte Anunciante':
-#    price = first_house.find_all('span')[4].text
-# price_ = [int(price[s]) for s in range(0, len(price)) if price[s].isdigit()]
-# price = ''
-# for x in price_:
-#    price = price + str(x)
-# prices.append(int(price))
+#print(first_house.find_all('span'))
+#print(len(first_house.find_all('span')))
+
+#prices = []
+
+#price = first_house.find_all('span')
+#price_position = int(len(price) - 1)
+#price = first_house.find_all('span')[price_position].text
+#price_ = [int(price[s]) for s in range(0, len(price)) if price[s].isdigit()]
+#price = ''
+#for x in price_:
+#   price = price + str(x)
+#prices.append(int(price))
+#
+#print(prices)
 
 # print(prices)
 # Retrieving the price of the first house
@@ -78,8 +87,13 @@ first_house = house_containers[1]
 # print(status)
 # Fixing the link, so that it can used to access the webpage that contains the requested house
 # I will be getting rid of the first forward slash and the last 6 digits/letters
-# link = 'https://casa.sapo.pt/' + first_house.find_all('a')[0].get('href')[1:-6]
-# print(link)
+link = 'https://casa.sapo.pt/' + first_house.find_all('a')[0].get('href')[1:-6]
+print(link)
+#request = requests.get(link, headers=headers)
+#page_html = BeautifulSoup(request.text, 'html.parser')
+#features = str(page_html.find_all('p', class_="ownerName"))
+#features = (features[features.find('<p class="ownerName">')+25:features.find('<span class="ownerAMI">')]).strip()
+#print(features)
 
 # 6) Fetching the image
 # image = str(first_house.find_all('img'))

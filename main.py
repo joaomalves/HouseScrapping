@@ -24,16 +24,15 @@ You will get blocked if you scrape too aggressively, so it’s a nice policy to 
 # First, i will create the lists that will handle the retrieved data and later will be used to build a Dataframe
 titulo = []
 preços = []
-proprietario = []
 area_util = []
 area_bruta = []
 estado = []
-descrição = []
+descriçao = []
 zona = []
 freguesia = []
 imagem = []
 links = []
-data_anuncio = []
+Divisões = []
 # From the website, i can see that there are 40 pages with results. We will make the loop go for 75 pages (in case one
 # day more houses are put for sale in the website). We will insert a break in the loop in case it finds an empty house container
 
@@ -56,9 +55,9 @@ for page in range(0, 75):
                 price = '-'
                 preços.append(price)
             else:
-                price = container.find_all('span')[2].text
-                if price == 'Contacte Anunciante':
-                    price = container.find_all('span')[3].text
+                price = container.find_all('span')
+                price_position = int(len(price) - 1)
+                price = container.find_all('span')[price_position].text
                 price_ = [int(price[s]) for s in range(0, len(price)) if price[s].isdigit()]
                 price = ''
                 for x in price_:
@@ -102,10 +101,13 @@ for page in range(0, 75):
             final_img = img[img.find('data-src-retina=')+16:img.find('id=')-1].replace("\"", "")
             imagem.append(final_img)
 
-            # Description (NEEDS MORE WORK)
-            # description = container.find_all('p', class_="searchPropertyDescription")[0].text.strip()
-
-            # Date (NEEDS MORE WORK - I NEED TO GET INTO THE PAGE ITSELF AND RETRIEVE THE DATE)
+            # Description
+            request_page_specific = requests.get(link, headers=headers)
+            page_html_specific = BeautifulSoup(request_page_specific.text, 'html.parser')
+            general_description = str(page_html_specific.find_all('div', class_="detailDescriptionContainer"))
+            description = general_description[general_description.find('"pDescription') + 15:general_description.find(
+                "</div>") - 5].replace("<br/>", " ")
+            descriçao.append(description)
 
     else:
         break
@@ -114,3 +116,23 @@ end = time.time()
 total_time = round((end - start), 2)
 
 print("Just finished scrapping {} pages, containing {} houses and it took {} seconds.".format(n_pages, len(titulo), total_time))
+
+# Creating the dataframe
+columns = ['Título', 'Preço', 'Área Útil (m2)', 'Área Bruta (m2)', 'Estado', 'Descrição', 'Zona',
+           'Freguesia', 'Imagem', 'Link']
+
+odivelas_sapo = pd.DataFrame({'Título': titulo,
+                             'Preço': preços,
+                             'Área Útil (m2)': area_util,
+                             'Área Bruta (m2)': area_bruta,
+                             'Estado': estado,
+                             'Descrição': descriçao,
+                             'Zona': zona,
+                             'Freguesia': freguesia,
+                             'Imagem': imagem,
+                             'Link': links})[columns]
+
+odivelas_sapo.to_excel('odivelas_sapo.xls')
+
+# Some houses don't retrieve the information correctly. For instance, the first house of the xls file
+# doesn't retrieve the title because it is not in the correct position inside the span
